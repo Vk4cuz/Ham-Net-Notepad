@@ -50,11 +50,21 @@ Stations removed from the running order return to the parked list. Existing stat
 
 ## Data Storage
 
-Data is stored locally in the browser using local browser storage. It is not sent to a server or shared between computers or browser profiles.
+Ham Net Notepad stores data locally in the web browser used to run the application.
 
-Export JSON regularly to create a backup or transfer data to another browser. JSON backups can be restored through the application's Import function.
+Data is automatically saved between sessions and does not require manual export or import for normal use.
 
-Saved session history remains available locally and can be downloaded as Markdown.
+Data is not automatically shared between:
+
+- Different web browsers
+- Different browser profiles
+- Different computers
+
+Use **Export Data** to create backups or transfer data to another browser or computer.
+
+Use **Import Data** to restore a backup or import data previously exported from Ham Net Notepad.
+
+Session history remains available locally and can also be downloaded as Markdown files for long-term storage or reference.
 
 ## Screenshots
 
