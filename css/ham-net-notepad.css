@@ -1,3 +1,20 @@
+/*
+ * Ham Net Notepad
+ * A lightweight amateur radio net participant tracker.
+ *
+ * Created by:
+ * Gary Crothers VK4CUZ
+ *
+ * Built with assistance from Microsoft Copilot.
+ *
+ * Copyright (c) 2026 Gary Crothers
+ * Licensed under the MIT License.
+ */
+
+/* ------------------------------
+   Base and Layout
+   Keep the page usable from local files with no framework or external assets.
+   ------------------------------ */
 :root {
   color-scheme: light;
   font-family: Arial, Helvetica, sans-serif;
@@ -44,6 +61,10 @@ header {
   background: #263e3c;
 }
 
+/* ------------------------------
+   Header
+   The title opens About; version and data actions remain visually secondary.
+   ------------------------------ */
 h1,
 h2,
 p {
@@ -139,15 +160,30 @@ main {
   color: #9b1c1c;
 }
 
+.no-nets-message {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #aebfba;
+  border-radius: 5px;
+  color: #263e3c;
+  background: #e9f1ef;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr);
   gap: 1rem;
 }
 
+/* ------------------------------
+   Workspace
+   The running order receives the majority of desktop width because it is
+   the primary focus while listening to a live net.
+   ------------------------------ */
 .pane,
 .history-pane,
 .editor-panel {
+  min-width: 0;
   padding: 1rem;
   border: 1px solid #cfcfc8;
   border-radius: 5px;
@@ -186,6 +222,11 @@ ol.station-list {
   overflow: hidden;
 }
 
+/* ------------------------------
+   Running Order Panel
+   Fixed control widths prevent clipping; station details shrink and truncate
+   first so rows remain compact for approximately 15-30 participants.
+   ------------------------------ */
 .running-row {
   display: flex;
   align-items: center;
@@ -219,6 +260,13 @@ ol.station-list {
   font-family: "Courier New", monospace;
   font-size: 1.05rem;
   color: #173f73;
+}
+
+.running-card .station-location {
+  display: inline;
+  color: #777;
+  font-size: 0.82rem;
+  font-weight: normal;
 }
 
 .station-location,
@@ -306,6 +354,18 @@ select {
   resize: vertical;
 }
 
+.edit-station-details {
+  grid-column: 2;
+  justify-self: start;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.82rem;
+}
+
+/* ------------------------------
+   Parked Stations
+   This source pool is deliberately denser than the running order and shows
+   only the callsign and name in its normal state.
+   ------------------------------ */
 .parked-card {
   display: flex;
   align-items: center;
@@ -372,6 +432,11 @@ select {
   margin-top: 1rem;
 }
 
+/* ------------------------------
+   Forms
+   Editors and history remain full-width supporting areas rather than part
+   of the high-frequency running-order interaction.
+   ------------------------------ */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -451,6 +516,11 @@ button {
   background: rgb(0 0 0 / 50%);
 }
 
+/* ------------------------------
+   Dialogs
+   About and Help share dimensions and scrolling behaviour so their content
+   can grow without introducing separate modal implementations.
+   ------------------------------ */
 .about-dialog-header {
   display: flex;
   align-items: flex-start;
@@ -520,6 +590,11 @@ button {
   background: #f7f7f4;
 }
 
+/* ------------------------------
+   Responsive Behaviour
+   Narrow displays stack the primary and source pools instead of compressing
+   the running-order controls beyond usable widths.
+   ------------------------------ */
 @media (max-width: 850px) {
   header,
   .inline-form {

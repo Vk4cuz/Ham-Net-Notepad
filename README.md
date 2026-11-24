@@ -39,7 +39,7 @@ No internet connection is required for normal operation.
 
 ## Basic Usage
 
-1. Create or select a net.
+1. On first use, create your first net. On later sessions, select an existing net or create another.
 2. Add stations from the parked list or use **Quick Add Station**.
 3. Reorder stations with the Up and Down controls.
 4. Select a station to add an optional session note.

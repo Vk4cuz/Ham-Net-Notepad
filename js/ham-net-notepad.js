@@ -1,8 +1,27 @@
+/*
+ * Ham Net Notepad
+ * A lightweight amateur radio net participant tracker for net participants
+ * rather than Net Control.
+ *
+ * Created by:
+ * Gary Crothers VK4CUZ
+ *
+ * Built with assistance from Microsoft Copilot.
+ *
+ * Copyright (c) 2026 Gary Crothers
+ * Licensed under the MIT License.
+ */
 (function () {
   "use strict";
 
+  // APP_VERSION is the only release-number source; UI surfaces are populated
+  // from data-app-version markers so version updates do not require markup edits.
   var APP_VERSION = "v1.0.0";
   var STORAGE_KEY = "ham-net-notepad-v1";
+
+  // The persisted state contains a shared station map, independent net records,
+  // one active draft per net, and immutable-style snapshots in session history.
+  // Nets reference station IDs rather than copying station records.
   var state = loadState();
   var statusTimer;
 
@@ -14,6 +33,7 @@
     openHelp: document.getElementById("open-help"),
     helpDialog: document.getElementById("help-dialog"),
     closeHelp: document.getElementById("close-help"),
+    noNetsMessage: document.getElementById("no-nets-message"),
     newNetButton: document.getElementById("new-net-button"),
     newNetForm: document.getElementById("new-net-form"),
     newNetName: document.getElementById("new-net-name"),
@@ -64,81 +84,38 @@
     return local.toISOString().slice(0, 10);
   }
 
-  function sampleState() {
+  function localTimestamp(date) {
+    var now = date || new Date();
+    var pad = function (value) {
+      return String(value).padStart(2, "0");
+    };
+    var offsetMinutes = -now.getTimezoneOffset();
+    var offsetSign = offsetMinutes >= 0 ? "+" : "-";
+    var absoluteOffset = Math.abs(offsetMinutes);
+    return now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" +
+      pad(now.getDate()) + "T" + pad(now.getHours()) + ":" +
+      pad(now.getMinutes()) + ":" + pad(now.getSeconds()) + "." +
+      String(now.getMilliseconds()).padStart(3, "0") + offsetSign +
+      pad(Math.floor(absoluteOffset / 60)) + ":" + pad(absoluteOffset % 60);
+  }
+
+  function newSessionDraft() {
+    return {
+      date: localDate(),
+      startedAt: localTimestamp(),
+      entries: []
+    };
+  }
+
+  function emptyState() {
+    // Existing localStorage data is loaded before this initializer is used, so
+    // removing release samples never replaces an existing user's records.
     return {
       version: 1,
-      selectedNetId: "net-monday",
-      stations: {
-        "station-vk4nb": {
-          id: "station-vk4nb",
-          callsign: "VK4NB",
-          name: "Neil",
-          location: "Mackay",
-          permanentNotes: "Regular participant",
-          lastSeen: "2026-11-16",
-          participationCount: 2
-        },
-        "station-vk4mcc": {
-          id: "station-vk4mcc",
-          callsign: "VK4MCC",
-          name: "Colin",
-          location: "Mackay",
-          permanentNotes: "Usually portable",
-          lastSeen: "2026-11-16",
-          participationCount: 2
-        },
-        "station-vk4frc": {
-          id: "station-vk4frc",
-          callsign: "VK4FRC",
-          name: "Bob",
-          location: "",
-          permanentNotes: "",
-          lastSeen: "2026-11-16",
-          participationCount: 2
-        },
-        "station-vk4cmw": {
-          id: "station-vk4cmw",
-          callsign: "VK4CMW",
-          name: "Mick",
-          location: "Sarina",
-          permanentNotes: "",
-          lastSeen: "2026-11-09",
-          participationCount: 1
-        },
-        "station-vk4hbb": {
-          id: "station-vk4hbb",
-          callsign: "VK4HBB",
-          name: "Brian",
-          location: "",
-          permanentNotes: "",
-          lastSeen: "",
-          participationCount: 0
-        }
-      },
-      nets: [
-        {
-          id: "net-monday",
-          name: "Monday Mackay 80m Net",
-          stationIds: [
-            "station-vk4nb",
-            "station-vk4mcc",
-            "station-vk4frc",
-            "station-vk4cmw",
-            "station-vk4hbb"
-          ],
-          previousRunningOrder: ["station-vk4nb", "station-vk4mcc", "station-vk4frc"]
-        },
-        {
-          id: "net-sunday",
-          name: "Sunday North Queensland Net",
-          stationIds: ["station-vk4nb", "station-vk4mcc"],
-          previousRunningOrder: ["station-vk4mcc", "station-vk4nb"]
-        }
-      ],
-      drafts: {
-        "net-monday": { date: localDate(), entries: [] },
-        "net-sunday": { date: localDate(), entries: [] }
-      },
+      selectedNetId: null,
+      stations: {},
+      nets: [],
+      drafts: {},
       history: []
     };
   }
@@ -148,7 +125,6 @@
       candidate.version === 1 &&
       candidate.stations &&
       Array.isArray(candidate.nets) &&
-      candidate.nets.length > 0 &&
       candidate.drafts &&
       Array.isArray(candidate.history);
   }
@@ -157,7 +133,7 @@
     try {
       var saved = localStorage.getItem(STORAGE_KEY);
       if (!saved) {
-        return sampleState();
+        return emptyState();
       }
       var parsed = JSON.parse(saved);
       if (!validateState(parsed)) {
@@ -166,9 +142,9 @@
       return parsed;
     } catch (error) {
       window.setTimeout(function () {
-        showStatus("Could not load saved data. Sample data is being used.", true);
+        showStatus("Could not load saved data. A new empty state is being used.", true);
       }, 0);
-      return sampleState();
+      return emptyState();
     }
   }
 
@@ -197,8 +173,15 @@
   }
 
   function getDraft(net) {
+    if (!net) {
+      return newSessionDraft();
+    }
     if (!state.drafts[net.id]) {
-      state.drafts[net.id] = { date: localDate(), entries: [] };
+      state.drafts[net.id] = newSessionDraft();
+    } else if (!state.drafts[net.id].startedAt) {
+      // Legacy drafts remain valid. Their first load after this release begins
+      // timeline tracking without changing the existing station entries.
+      state.drafts[net.id].startedAt = localTimestamp();
     }
     return state.drafts[net.id];
   }
@@ -219,6 +202,20 @@
     return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString();
   }
 
+  function formatTimestampTime(timestamp) {
+    if (!timestamp) {
+      return "";
+    }
+    var date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      return "";
+    }
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
   function renderNetOptions() {
     elements.netSelect.replaceChildren();
     state.nets.forEach(function (net) {
@@ -231,6 +228,8 @@
   }
 
   function renderRunningOrder() {
+    // A session draft is rebuilt from the selected net's entries only. Notes are
+    // hidden inside the selected row to preserve a dense live-net display.
     var net = getSelectedNet();
     var draft = getDraft(net);
     elements.runningOrder.replaceChildren();
@@ -245,6 +244,9 @@
       card.querySelector(".order-number").textContent = index + 1 + ".";
       card.querySelector(".callsign").textContent = station.callsign;
       card.querySelector(".station-name").textContent = station.name;
+      var location = card.querySelector(".station-location");
+      location.textContent = station.location ? " \u00b7 " + station.location : "";
+      location.hidden = !station.location;
 
       var upButton = card.querySelector(".move-up");
       var downButton = card.querySelector(".move-down");
@@ -282,6 +284,9 @@
       stationSelect.setAttribute("aria-label", "Edit note for " + station.callsign);
       stationSelect.addEventListener("click", toggleNoteEditor);
       noteIndicator.addEventListener("click", toggleNoteEditor);
+      card.querySelector(".edit-station-details").addEventListener("click", function () {
+        openStationEditor(station.id);
+      });
       note.addEventListener("input", function () {
         entry.note = note.value;
         noteIndicator.hidden = !note.value.trim();
@@ -297,6 +302,9 @@
   }
 
   function orderedParkedStations(net, searchTerm) {
+    // The parked view excludes active draft entries. The prior saved order is
+    // retained as a practical default, while search can expose shared stations
+    // that are not yet members of this net.
     var activeIds = new Set(getDraft(net).entries.map(function (entry) {
       return entry.stationId;
     }));
@@ -355,6 +363,8 @@
         (isMember ? "Add " : "Associate and add ") + stationDisplayName(station)
       );
       addButton.addEventListener("click", function () {
+        // Parked stations can create net membership without duplicating the
+        // shared station record used by any other net.
         if (!isMember) {
           net.stationIds.push(station.id);
         }
@@ -382,6 +392,8 @@
   }
 
   function renderHistory() {
+    // Displayed history is filtered by net and ordered newest first. Stored
+    // station snapshots preserve names and notes even if station details later change.
     var net = getSelectedNet();
     var history = state.history.filter(function (session) {
       return session.netId === net.id;
@@ -406,11 +418,23 @@
       heading.textContent = formatDate(session.date) + " - " + session.entries.length + " stations";
       item.appendChild(heading);
 
+      var startedTime = formatTimestampTime(session.startedAt);
+      if (startedTime) {
+        var sessionTiming = document.createElement("p");
+        sessionTiming.className = "pane-summary history-timing";
+        sessionTiming.textContent = "Started " + startedTime;
+        item.appendChild(sessionTiming);
+      }
+
       var list = document.createElement("ol");
       session.entries.forEach(function (entry) {
         var station = entry.stationSnapshot;
         var listItem = document.createElement("li");
         listItem.textContent = stationDisplayName(station);
+        var joinedTime = formatTimestampTime(entry.joinedAt);
+        if (joinedTime) {
+          listItem.textContent += " - Joined " + joinedTime;
+        }
         if (entry.note) {
           listItem.textContent += " - " + entry.note;
         }
@@ -421,10 +445,51 @@
     });
   }
 
+  function renderNoNet() {
+    elements.netSelect.disabled = true;
+    elements.noNetsMessage.hidden = false;
+    elements.sessionDateLabel.textContent = "No active net";
+    elements.runningHeading.textContent = "Tonight's Running Order (0)";
+    elements.parkedHeading.textContent = "Parked Stations (0)";
+    elements.runningOrder.replaceChildren();
+    elements.parkedStations.replaceChildren();
+    elements.runningEmpty.hidden = false;
+    elements.runningEmpty.textContent =
+      "Create a net, then add stations to its running order.";
+    elements.parkedEmpty.hidden = false;
+    elements.parkedEmpty.textContent =
+      "Stations will appear here after a net has been created.";
+    elements.sessionHistory.replaceChildren();
+    var historyMessage = document.createElement("p");
+    historyMessage.className = "empty-message";
+    historyMessage.textContent = "Create a net to begin saving session history.";
+    elements.sessionHistory.appendChild(historyMessage);
+    elements.quickAddInput.disabled = true;
+    document.getElementById("quick-add-button").disabled = true;
+    elements.stationSearch.disabled = true;
+    elements.newStationButton.disabled = true;
+    elements.saveSession.disabled = true;
+    elements.downloadHistory.disabled = true;
+  }
+
   function render() {
     var net = getSelectedNet();
-    state.selectedNetId = net.id;
     renderNetOptions();
+    if (!net) {
+      state.selectedNetId = null;
+      renderNoNet();
+      persist();
+      return;
+    }
+    state.selectedNetId = net.id;
+    elements.netSelect.disabled = false;
+    elements.noNetsMessage.hidden = true;
+    elements.quickAddInput.disabled = false;
+    document.getElementById("quick-add-button").disabled = false;
+    elements.stationSearch.disabled = false;
+    elements.newStationButton.disabled = false;
+    elements.runningEmpty.textContent =
+      "Select stations from the parked list as they check in.";
     elements.sessionDateLabel.textContent = "Session date: " + formatDate(getDraft(net).date);
     renderRunningOrder();
     renderParkedStations();
@@ -433,19 +498,32 @@
   }
 
   function addToRunning(stationId) {
+    // A running order is an ordered list of draft references; the station's
+    // permanent record remains unchanged until a session is actually saved.
     var net = getSelectedNet();
     var draft = getDraft(net);
     if (!draft.entries.some(function (entry) {
       return entry.stationId === stationId;
     })) {
-      draft.entries.push({ stationId: stationId, note: "" });
+      draft.entries.push({
+        stationId: stationId,
+        joinedAt: localTimestamp(),
+        note: ""
+      });
     }
     persist();
     render();
   }
 
   function quickAddStation(event) {
+    // Quick Add is intentionally conservative: exact callsign, exact name,
+    // then a unique partial match. Ambiguous searches require clarification
+    // before a station is created or checked in.
     event.preventDefault();
+    if (!getSelectedNet()) {
+      showStatus("Create a net before adding stations.", true);
+      return;
+    }
     var entered = elements.quickAddInput.value.trim();
     if (!entered) {
       elements.quickAddInput.focus();
@@ -497,6 +575,9 @@
     var net = getSelectedNet();
     var draft = getDraft(net);
     if (!station) {
+      // No existing match is treated as a callsign. This live-net shortcut
+      // creates a valid shared record with blank optional fields and no
+      // participation statistics until the session is saved.
       station = {
         id: createId("station"),
         callsign: normalizedCallsign,
@@ -520,7 +601,11 @@
     if (!net.stationIds.includes(station.id)) {
       net.stationIds.push(station.id);
     }
-    draft.entries.push({ stationId: station.id, note: "" });
+    draft.entries.push({
+      stationId: station.id,
+      joinedAt: localTimestamp(),
+      note: ""
+    });
     elements.quickAddInput.value = "";
     persist();
     render();
@@ -529,6 +614,8 @@
   }
 
   function removeFromRunning(stationId) {
+    // Removing a station only removes its draft entry; net membership and the
+    // shared station record remain available in the parked pool.
     var draft = getDraft(getSelectedNet());
     draft.entries = draft.entries.filter(function (entry) {
       return entry.stationId !== stationId;
@@ -616,7 +703,14 @@
   }
 
   function saveSession() {
+    // Save is the commit point for a net occurrence. It snapshots order and
+    // notes, updates participation statistics, then resets the active draft.
+    // A participant's final position is retained to seed the next parked order.
     var net = getSelectedNet();
+    if (!net) {
+      showStatus("Create a net before saving a session.", true);
+      return;
+    }
     var draft = getDraft(net);
     if (!draft.entries.length) {
       showStatus("Add at least one station before saving.", true);
@@ -624,16 +718,28 @@
     }
 
     var savedAt = new Date().toISOString();
+    var closedAt = localTimestamp();
+    var durationSeconds = Math.max(
+      0,
+      Math.floor((Date.parse(closedAt) - Date.parse(draft.startedAt)) / 1000)
+    );
+    if (!Number.isFinite(durationSeconds)) {
+      durationSeconds = 0;
+    }
     var historyEntry = {
       id: createId("session"),
       netId: net.id,
       netName: net.name,
       date: draft.date,
+      startedAt: draft.startedAt,
+      closedAt: closedAt,
+      durationSeconds: durationSeconds,
       savedAt: savedAt,
       entries: draft.entries.map(function (entry) {
         var station = state.stations[entry.stationId];
         return {
           stationId: entry.stationId,
+          joinedAt: entry.joinedAt || "",
           stationSnapshot: {
             callsign: station.callsign,
             name: station.name,
@@ -662,13 +768,15 @@
     });
     net.previousRunningOrder = finalRunningOrder
       .concat(previousParkedOrder, remainingStations);
-    state.drafts[net.id] = { date: localDate(), entries: [] };
+    state.drafts[net.id] = newSessionDraft();
     persist();
     render();
     showStatus("Session saved to local history.");
   }
 
   function historyAsMarkdown() {
+    // Markdown history is generated from saved snapshots in original participant
+    // order; notes are listed separately so ordered callsigns remain scannable.
     var net = getSelectedNet();
     var sessions = state.history.filter(function (session) {
       return session.netId === net.id;
@@ -685,8 +793,17 @@
         ""
       );
       session.entries.forEach(function (entry, index) {
-        lines.push((index + 1) + ". " + stationDisplayName(entry.stationSnapshot));
+        var joinedTime = formatTimestampTime(entry.joinedAt);
+        lines.push(
+          (index + 1) + ". " + stationDisplayName(entry.stationSnapshot) +
+          (joinedTime ? " - Joined " + joinedTime : "")
+        );
       });
+
+      var startedTime = formatTimestampTime(session.startedAt);
+      if (startedTime) {
+        lines.splice(lines.length - session.entries.length, 0, "Session start: " + startedTime, "");
+      }
 
       var notes = session.entries.filter(function (entry) {
         return entry.note;
@@ -739,7 +856,7 @@
         }
         state = imported;
         if (!getSelectedNet()) {
-          state.selectedNetId = state.nets[0].id;
+          state.selectedNetId = state.nets.length ? state.nets[0].id : null;
         }
         persist();
         closeStationEditor();
@@ -848,7 +965,7 @@
     };
     state.nets.push(net);
     state.selectedNetId = net.id;
-    state.drafts[net.id] = { date: localDate(), entries: [] };
+    state.drafts[net.id] = newSessionDraft();
     elements.newNetForm.hidden = true;
     elements.newNetForm.reset();
     elements.stationSearch.value = "";
@@ -887,7 +1004,7 @@
   });
 
   if (!state.nets.some(function (net) { return net.id === state.selectedNetId; })) {
-    state.selectedNetId = state.nets[0].id;
+    state.selectedNetId = state.nets.length ? state.nets[0].id : null;
   }
   render();
 }());
