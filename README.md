@@ -17,6 +17,10 @@ The project was inspired by years of maintaining amateur radio net participant l
 - Local browser storage
 - Offline operation
 
+## Screenshot
+
+![Ham Net Notepad Main Screen](screenshots\Ham-Net-Notepad-Screenshot.jpeg)
+
 ## Why Ham Net Notepad?
 
 Most amateur radio logging and net software focuses on the needs of Net Control. Ham Net Notepad instead focuses on individual participants who want to maintain their own running order and notes while listening to a net.
