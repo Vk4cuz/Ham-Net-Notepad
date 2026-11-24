@@ -1,0 +1,542 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #202020;
+  background: #f4f4f0;
+  line-height: 1.4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  color: white;
+  background: #263e3c;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0.1rem;
+  font-size: 1.65rem;
+}
+
+.title-button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  background: transparent;
+}
+
+.title-button:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+h2 {
+  margin-bottom: 0.35rem;
+  font-size: 1.15rem;
+}
+
+.subtitle,
+.pane-summary,
+.field-hint {
+  margin-bottom: 0;
+  color: inherit;
+  opacity: 0.8;
+}
+
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.data-actions,
+.form-actions,
+.station-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.4rem;
+}
+
+.header-version {
+  align-self: center;
+  margin-left: 0.2rem;
+  color: white;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.8rem;
+  border: 1px solid #cfcfc8;
+  border-radius: 5px;
+  background: white;
+}
+
+.toolbar select {
+  min-width: min(22rem, 60vw);
+}
+
+.session-date {
+  margin-left: auto;
+  font-weight: bold;
+}
+
+.inline-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status {
+  min-height: 1.8rem;
+  padding: 0.35rem 0.2rem;
+  color: #155724;
+}
+
+.status.error {
+  color: #9b1c1c;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(14rem, 1fr);
+  gap: 1rem;
+}
+
+.pane,
+.history-pane,
+.editor-panel {
+  padding: 1rem;
+  border: 1px solid #cfcfc8;
+  border-radius: 5px;
+  background: white;
+}
+
+.pane-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.station-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+ol.station-list {
+  padding: 0;
+  list-style: none;
+}
+
+.station-card {
+  border: 1px solid #d8d8d2;
+  border-radius: 4px;
+  background: #fafaf8;
+}
+
+.running-card {
+  min-width: 0;
+  padding: 0.1rem 0.35rem;
+  overflow: hidden;
+}
+
+.running-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 1.8rem;
+  gap: 0.35rem;
+  overflow: hidden;
+}
+
+.station-select {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.15rem 0.25rem;
+  border: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+}
+
+.order-number {
+  flex: 0 0 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: right;
+}
+
+.callsign {
+  margin-right: 0.4rem;
+  font-family: "Courier New", monospace;
+  font-size: 1.05rem;
+  color: #173f73;
+}
+
+.station-location,
+.association-note {
+  display: block;
+  color: #666;
+  font-size: 0.88rem;
+}
+
+.note-indicator {
+  flex: 0 0 1.75rem;
+  width: 1.75rem;
+  padding: 0.1rem;
+  color: #7a4e00;
+  font-size: 0.72rem;
+  font-weight: bold;
+}
+
+.note-editor {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.25rem 0.25rem 2.55rem;
+  border-top: 1px solid #ddd;
+  font-size: 0.85rem;
+}
+
+.compact-action {
+  flex: 0 0 1.9rem;
+  width: 1.9rem;
+  padding: 0.18rem;
+  line-height: 1.2;
+}
+
+.running-row .station-actions {
+  flex: 0 0 6.5rem;
+  width: 6.5rem;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.quick-add-form {
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #d8d8d2;
+}
+
+.quick-add-form label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.quick-add-controls {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.quick-add-controls input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.quick-add-controls button {
+  flex: 0 0 auto;
+}
+
+.remove-action {
+  color: #8f1d1d;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  background: white;
+}
+
+.note-editor textarea {
+  resize: vertical;
+}
+
+.parked-card {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-radius: 2px;
+}
+
+#parked-stations {
+  gap: 1px;
+}
+
+.station-main-action {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto;
+  padding: 0.08rem 0.35rem;
+  border: 0;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  background: transparent;
+}
+
+.edit-station {
+  flex: 0 0 auto;
+  margin: 0 0.2rem;
+  padding: 0.06rem 0.25rem;
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.parked-card .station-location,
+.parked-card .association-note {
+  display: none;
+}
+
+.parked-card .station-name {
+  color: #666;
+  font-size: 0.88rem;
+}
+
+.parked-card .callsign {
+  font-size: 0.95rem;
+}
+
+.association-note {
+  margin-top: 0.15rem;
+  font-style: italic;
+}
+
+.empty-message {
+  padding: 1rem;
+  margin: 0;
+  color: #666;
+  text-align: center;
+  border: 1px dashed #b8b8b0;
+  border-radius: 4px;
+}
+
+.editor-panel,
+.history-pane {
+  margin-top: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.wide-field {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  margin-top: 0.8rem;
+}
+
+.primary {
+  color: white;
+  border-color: #235f45;
+  background: #235f45;
+}
+
+button {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #9a9a94;
+  border-radius: 3px;
+  background: #f7f7f4;
+}
+
+.history-item {
+  padding: 0.65rem;
+  border-top: 1px solid #ddd;
+}
+
+.history-item:first-child {
+  border-top: 0;
+}
+
+.history-item h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.history-item ol {
+  margin: 0.4rem 0 0;
+  padding-left: 2rem;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.info-dialog {
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 1px solid #a9a9a2;
+  border-radius: 6px;
+  color: #202020;
+  background: #fff;
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 25%);
+}
+
+.info-dialog::backdrop {
+  background: rgb(0 0 0 / 50%);
+}
+
+.about-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  color: white;
+  background: #263e3c;
+}
+
+.about-dialog-header h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.about-version {
+  margin: 0.15rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.about-dialog-content {
+  max-height: calc(100vh - 12rem);
+  padding: 0.25rem 1.1rem 0.75rem;
+  overflow-y: auto;
+}
+
+.about-dialog-content section {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.about-dialog-content section:last-child {
+  border-bottom: 0;
+}
+
+.about-dialog-content h3 {
+  margin: 0 0 0.35rem;
+  color: #263e3c;
+  font-size: 1rem;
+}
+
+.about-dialog-content p {
+  margin-bottom: 0.45rem;
+}
+
+.about-dialog-content p:last-child,
+.about-dialog-content ul:last-child {
+  margin-bottom: 0;
+}
+
+.about-dialog-content ul {
+  padding-left: 1.35rem;
+}
+
+.help-content ol {
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.about-footer {
+  padding: 0.7rem 1.1rem;
+  border-top: 1px solid #ddd;
+  color: #555;
+  font-size: 0.85rem;
+  text-align: center;
+  background: #f7f7f4;
+}
+
+@media (max-width: 850px) {
+  header,
+  .inline-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .session-date {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

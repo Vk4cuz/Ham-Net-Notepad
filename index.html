@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ham Net Notepad</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1><button id="about-title" type="button" class="title-button">Ham Net Notepad</button></h1>
+      <p class="subtitle">A simple local notepad for amateur radio nets</p>
+    </div>
+    <div class="data-actions">
+      <button id="export-data" type="button">Export data</button>
+      <button id="import-data" type="button">Import data</button>
+      <button id="open-help" type="button">Help</button>
+      <input id="import-file" type="file" accept="application/json,.json" hidden>
+      <span class="header-version" data-app-version></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="toolbar" aria-labelledby="net-controls-heading">
+      <h2 id="net-controls-heading" class="visually-hidden">Net controls</h2>
+      <label for="net-select">Net</label>
+      <select id="net-select"></select>
+      <button id="new-net-button" type="button">Create new net</button>
+      <form id="new-net-form" class="inline-form" hidden>
+        <label for="new-net-name">Net name</label>
+        <input id="new-net-name" type="text" required maxlength="100" autocomplete="off">
+        <button type="submit">Create</button>
+        <button id="cancel-new-net" type="button">Cancel</button>
+      </form>
+      <span id="session-date-label" class="session-date"></span>
+    </section>
+
+    <div id="status-message" class="status" role="status" aria-live="polite"></div>
+
+    <section class="workspace">
+      <section class="pane running-pane" aria-labelledby="running-heading">
+        <div class="pane-heading">
+          <div>
+            <h2 id="running-heading">Tonight's Running Order (0)</h2>
+            <p id="running-summary" class="pane-summary">Live running order</p>
+          </div>
+          <button id="save-session" type="button" class="primary">Save session</button>
+        </div>
+        <ol id="running-order" class="station-list"></ol>
+        <p id="running-empty" class="empty-message">Select stations from the parked list as they check in.</p>
+        <form id="quick-add-form" class="quick-add-form">
+          <label for="quick-add-input">Quick Add Station</label>
+          <div class="quick-add-controls">
+            <input id="quick-add-input" type="text" placeholder="Enter callsign or name" autocomplete="off" maxlength="100">
+            <button id="quick-add-button" type="submit" class="primary">Add</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="pane parked-pane" aria-labelledby="parked-heading">
+        <div class="pane-heading">
+          <div>
+            <h2 id="parked-heading">Parked Stations (0)</h2>
+            <p id="parked-summary" class="pane-summary">Available net stations</p>
+          </div>
+          <button id="new-station-button" type="button">New station</button>
+        </div>
+        <label for="station-search">Find or associate a station</label>
+        <input id="station-search" type="search" placeholder="Search callsign or name" autocomplete="off">
+        <div id="parked-stations" class="station-list" aria-live="polite"></div>
+        <p id="parked-empty" class="empty-message" hidden>No matching stations.</p>
+      </section>
+    </section>
+
+    <section id="station-editor" class="editor-panel" hidden aria-labelledby="station-editor-heading">
+      <h2 id="station-editor-heading">New station</h2>
+      <form id="station-form">
+        <input id="station-id" type="hidden">
+        <div class="form-grid">
+          <label>
+            Callsign
+            <input id="station-callsign" type="text" required maxlength="20" autocomplete="off">
+          </label>
+          <label>
+            Name
+            <input id="station-name" type="text" maxlength="100" autocomplete="off">
+          </label>
+          <label>
+            Location
+            <input id="station-location" type="text" maxlength="100" autocomplete="off">
+          </label>
+          <label class="wide-field">
+            Permanent notes
+            <textarea id="station-notes" rows="2" maxlength="500"></textarea>
+          </label>
+        </div>
+        <p id="station-form-hint" class="field-hint"></p>
+        <div class="form-actions">
+          <button id="save-station" type="submit" class="primary">Save station</button>
+          <button id="cancel-station-editor" type="button">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="history-pane" aria-labelledby="history-heading">
+      <div class="pane-heading">
+        <div>
+          <h2 id="history-heading">Session history</h2>
+          <p class="pane-summary">Saved sessions for the selected net</p>
+        </div>
+        <button id="download-history" type="button">Download history</button>
+      </div>
+      <div id="session-history"></div>
+    </section>
+  </main>
+
+  <dialog id="about-dialog" class="info-dialog" aria-labelledby="about-heading">
+    <div class="about-dialog-header">
+      <div>
+        <h2 id="about-heading">Ham Net Notepad</h2>
+        <p class="about-version"><span data-app-version></span></p>
+      </div>
+      <button id="close-about" type="button" aria-label="Close About dialog">Close</button>
+    </div>
+
+    <div class="about-dialog-content">
+      <section>
+        <h3>Created by</h3>
+        <p><strong>Gary Crothers VK4CUZ</strong></p>
+      </section>
+
+      <section>
+        <h3>Purpose</h3>
+        <p>A lightweight amateur radio net participant tracker.</p>
+        <p>Designed for operators participating in nets rather than Net Control.</p>
+      </section>
+
+      <section>
+        <h3>Project Origin</h3>
+        <p>This project was inspired by years of maintaining amateur radio net participant lists in OneNote.</p>
+        <p>The goal was to create a simple local-first application that allows operators to:</p>
+        <ul>
+          <li>Build a running order as stations check in</li>
+          <li>Reorder stations easily during a net</li>
+          <li>Maintain participant information</li>
+          <li>Record session notes</li>
+          <li>Save session history</li>
+        </ul>
+        <p>without requiring cloud services, subscriptions, accounts, or complex logging software.</p>
+      </section>
+
+      <section>
+        <h3>Current Version Features</h3>
+        <ul>
+          <li>Multiple net support</li>
+          <li>Shared station database</li>
+          <li>Running order management</li>
+          <li>Parked station management</li>
+          <li>Session notes</li>
+          <li>Session history</li>
+          <li>JSON import/export</li>
+          <li>Offline operation</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Credits</h3>
+        <p>Created by: <strong>Gary Crothers VK4CUZ</strong></p>
+        <p>Built with assistance from Microsoft Copilot.</p>
+        <p>Started: 2026</p>
+      </section>
+    </div>
+
+    <footer class="about-footer">Ham Net Notepad - Created by Gary Crothers VK4CUZ</footer>
+  </dialog>
+
+  <dialog id="help-dialog" class="info-dialog" aria-labelledby="help-heading">
+    <div class="about-dialog-header">
+      <div>
+        <h2 id="help-heading">Ham Net Notepad Help</h2>
+        <p class="about-version"><span data-app-version></span></p>
+      </div>
+      <button id="close-help" type="button" aria-label="Close Help dialog">Close</button>
+    </div>
+
+    <div class="about-dialog-content help-content">
+      <section>
+        <h3>Purpose</h3>
+        <p>Ham Net Notepad is designed for amateur radio operators participating in nets.</p>
+      </section>
+
+      <section>
+        <h3>Creating a Session</h3>
+        <ol>
+          <li>Select a net.</li>
+          <li>Stations begin in the parked list.</li>
+          <li>Add stations as they check in.</li>
+          <li>Reorder stations as required.</li>
+          <li>Add optional notes.</li>
+          <li>Save the session.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h3>Running Order</h3>
+        <ul>
+          <li>Move stations up or down.</li>
+          <li>Remove stations back to the parked list.</li>
+          <li>Change the running order at any time.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Quick Add Station</h3>
+        <ul>
+          <li>Type a callsign or name.</li>
+          <li>Existing stations are added directly.</li>
+          <li>New stations are created automatically.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Session History</h3>
+        <ul>
+          <li>Saving a session updates participation data.</li>
+          <li>History is stored locally.</li>
+          <li>History can be downloaded as Markdown.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>Data Storage</h3>
+        <ul>
+          <li>Data is stored locally in the browser.</li>
+          <li>Export JSON regularly for backup.</li>
+        </ul>
+      </section>
+    </div>
+
+    <footer class="about-footer">Ham Net Notepad <span data-app-version></span></footer>
+  </dialog>
+
+  <template id="running-station-template">
+    <li class="station-card running-card">
+      <div class="running-row">
+        <span class="order-number"></span>
+        <button class="station-select" type="button" title="Select to edit session note">
+          <strong class="callsign"></strong>
+          <span class="station-name"></span>
+        </button>
+        <button class="note-indicator" type="button" title="Edit session note" hidden>N</button>
+        <div class="station-actions">
+          <button class="move-up compact-action" type="button" title="Move station up" aria-label="Move station up">&#8593;</button>
+          <button class="move-down compact-action" type="button" title="Move station down" aria-label="Move station down">&#8595;</button>
+          <button class="park-station compact-action remove-action" type="button" title="Remove from running order" aria-label="Remove from running order">&#10005;</button>
+        </div>
+      </div>
+      <label class="note-editor" hidden>
+        <span>Session note</span>
+        <textarea class="session-note" rows="2" placeholder="Optional note for this session"></textarea>
+      </label>
+    </li>
+  </template>
+
+  <template id="parked-station-template">
+    <article class="station-card parked-card">
+      <button class="add-station station-main-action" type="button">
+        <strong class="callsign"></strong>
+        <span class="station-name"></span>
+        <span class="station-location"></span>
+        <span class="association-note"></span>
+      </button>
+      <button class="edit-station" type="button">Edit</button>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
