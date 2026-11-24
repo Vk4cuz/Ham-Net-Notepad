@@ -19,7 +19,7 @@ The project was inspired by years of maintaining amateur radio net participant l
 
 ## Screenshot
 
-![Ham Net Notepad Main Screen](screenshots\Ham-Net-Notepad-Screenshot.jpeg)
+![Ham Net Notepad Main Screen](screenshots/Ham-Net-Notepad-Screenshot.jpeg)
 
 ## Why Ham Net Notepad?
 
